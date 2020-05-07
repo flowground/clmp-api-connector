@@ -1,0 +1,90 @@
+{
+    "title": "CLMP API",
+    "description": "API for getting report data out of Customer Lifetime Magagement Platform (CLMP). You need a API key for these endpoints. You can create a personal token in your CLMP profile.",
+    "docsUrl": "",
+    "url": "https://localhost/pub_api",
+    "envVars": {},
+    "credentials": {
+        "fields": {
+            "server": {
+                "label": "Server",
+                "viewClass": "SelectView",
+                "model": [
+                    "https://localhost/pub_api - Local development server",
+                    "https://clmp-ref.external.app.telekomcloud.com/pub_api - Telekom internal staging server for testing",
+                    "https://clmp-live.external.app.telekomcloud.com/pub_api - Telekom production server",
+                    "--- Custom URL"
+                ],
+                "required": true
+            },
+            "otherServer": {
+                "label": "Custom Server URL",
+                "viewClass": "TextFieldView"
+            },
+            "auth_bearerAuth": {
+                "label": "bearerAuth (undefined)",
+                "viewClass": "TextFieldView"
+            }
+        }
+    },
+    "triggers": {
+        "startFlow": {
+            "main": "./lib/triggers/startFlow.js",
+            "type": "polling",
+            "title": "Start Flow",
+            "fields": {}
+        }
+    },
+    "actions": {
+        "get_mew": {
+            "main": "./lib/actions/get_mew.js",
+            "title": "Returns information about the current user.",
+            "description": "Takes the api token from the header and returns a json object which includes user data",
+            "fields": {
+                "verbose": {
+                    "viewClass": "CheckBoxView",
+                    "label": "Debug this step (log more data)"
+                }
+            },
+            "metadata": {
+                "in": "./lib/schemas/get_mew.in.json",
+                "out": {
+                    "type": "object"
+                }
+            }
+        },
+        "get_reports__id__fields": {
+            "main": "./lib/actions/get_reports__id__fields.js",
+            "title": "Returns a list of fields for the report",
+            "fields": {
+                "verbose": {
+                    "viewClass": "CheckBoxView",
+                    "label": "Debug this step (log more data)"
+                }
+            },
+            "metadata": {
+                "in": "./lib/schemas/get_reports__id__fields.in.json",
+                "out": {
+                    "type": "object"
+                }
+            }
+        },
+        "get_reports__id__result": {
+            "main": "./lib/actions/get_reports__id__result.js",
+            "title": "Returns the result of a report",
+            "description": "Returns all rows of the report as json objects",
+            "fields": {
+                "verbose": {
+                    "viewClass": "CheckBoxView",
+                    "label": "Debug this step (log more data)"
+                }
+            },
+            "metadata": {
+                "in": "./lib/schemas/get_reports__id__result.in.json",
+                "out": {
+                    "type": "object"
+                }
+            }
+        }
+    }
+}

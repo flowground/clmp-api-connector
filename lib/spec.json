@@ -1,0 +1,273 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "CLMP API",
+        "description": "API for getting report data out of Customer Lifetime Magagement Platform (CLMP). You need a API key for these endpoints. You can create a personal token in your CLMP profile.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://localhost/pub_api",
+            "description": "Local development server"
+        },
+        {
+            "url": "https://clmp-ref.external.app.telekomcloud.com/pub_api",
+            "description": "Telekom internal staging server for testing"
+        },
+        {
+            "url": "https://clmp-live.external.app.telekomcloud.com/pub_api",
+            "description": "Telekom production server"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "paths": {
+        "/mew": {
+            "get": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "summary": "Returns information about the current user.",
+                "description": "Takes the api token from the header and returns a json object which includes user data",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "description": "The user ID."
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The user name."
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "description": "The user email."
+                                        },
+                                        "active": {
+                                            "type": "integer",
+                                            "description": "1 if user is active, 0 if user is blocked."
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "description": "Further ressources.",
+                                            "properties": {
+                                                "_self": {
+                                                    "type": "string",
+                                                    "description": "The user resource."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/{id}/fields": {
+            "get": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "summary": "Returns a list of fields for the report",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Report ID",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "fields": {
+                                            "type": "array",
+                                            "description": "The fields in the given report.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "The name of the field"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "description": "The type of the field",
+                                                        "enum": [
+                                                            "Metric",
+                                                            "Dimension",
+                                                            "Formula"
+                                                        ]
+                                                    },
+                                                    "format": {
+                                                        "type": "string",
+                                                        "description": "The type used to format the field value",
+                                                        "enum": [
+                                                            "Null",
+                                                            "Float",
+                                                            "Currency",
+                                                            "Date",
+                                                            "Integer",
+                                                            "Percent",
+                                                            "ReportLink"
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Report could not be found in the database",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "description": "The error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reports/{id}/result": {
+            "get": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "summary": "Returns the result of a report",
+                "description": "Returns all rows of the report as json objects",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Report ID",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "segment",
+                        "in": "query",
+                        "description": "Segmentation - one of Day, Week, Month, Year, null. Specifies how the data should be aggregated",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": false
+                    },
+                    {
+                        "name": "start",
+                        "in": "query",
+                        "description": "The start date from where data should be received. Default: Today minus 1 week. Format: YYYY-MM-DD",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": false
+                    },
+                    {
+                        "name": "end",
+                        "in": "query",
+                        "description": "The end date to where data should be received. Default: Today. Format: YYYY-MM-DD",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": false
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "Comma separated list of fields to be shown. Default would be only Date. Get the list of fields by requesting /reports/{id}/fields. The field names must be the same as defined in the report column name.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "rows": {
+                                            "type": "array",
+                                            "description": "result rows of the configured report",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "values": {
+                                                        "type": "array",
+                                                        "description": "Array of values in the same order as the given fieldlist in the query",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Report could not be found in the database",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "description": "The error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
